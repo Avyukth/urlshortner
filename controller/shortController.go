@@ -28,11 +28,5 @@ func RedirectShortUrl(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No URL found!"})
 		return
 	}
-	////c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": todo.Url})
-	//c.HTML(http.StatusOK, "success.html", gin.H{
-	//	"shortU": todo.Url, "type": "Long",
-	//})
-
 	c.Redirect(http.StatusMovedPermanently, "http://"+todo.Url)
-
 }

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	."urlshorner/migration"
-	."urlshorner/model"
+	. "urlshorner/migration"
+	. "urlshorner/model"
 )
-//var db = GetDb()
+
 func CreateUrlShorter(c *gin.Context) {
 	fmt.Println("here")
 	c.HTML(http.StatusOK, "forms.html", gin.H{
@@ -18,14 +18,12 @@ func CreateUrlShorter(c *gin.Context) {
 
 }
 
-func CretaeShortUrl(c *gin.Context) {
+func CreateShortUrl(c *gin.Context) {
 	urlData := c.PostForm("url")
 	urlHashId := generateHash(urlData)
 	shortenUrl := "http://rzp.com/" + urlHashId
-	fmt.Println(shortenUrl)
-	//fmt.Println(shortenUrl)
 
-	if (!chackHashExist(urlHashId)){
+	if !checkHashExist(urlHashId) {
 		data := UrlModel{UrlHashId: urlHashId, Url: urlData, Shorten: shortenUrl}
 		fmt.Println(data)
 		Db.Debug().Create(&data)
@@ -37,7 +35,7 @@ func CretaeShortUrl(c *gin.Context) {
 	})
 }
 
-func chackHashExist(urlHashId string) bool {
+func checkHashExist(urlHashId string) bool {
 	var todo UrlModel
 	fmt.Println(todo.UrlHashId)
 	Db.Where("url_hash_id = ?", urlHashId).First(&todo)

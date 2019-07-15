@@ -8,7 +8,6 @@ type (
 		UrlHashId string `gorm:"primary_key"`
 		Url       string
 		Shorten   string
-		Hits	  int
-		//ShortenHashId []byte
+		Hits      int
 	}
 )

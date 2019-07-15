@@ -2,13 +2,14 @@ package migration
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 	//. "urlshorner"
 	. "urlshorner/model"
 )
 
 var Db *gorm.DB
+
 func Init() {
 	fmt.Println("here")
 
@@ -19,8 +20,6 @@ func Init() {
 	}
 	//Migrate the Schema
 	Db.AutoMigrate(&UrlModel{})
-	//return db
-	//fmt.Println("done")
 }
 func GetDb() *gorm.DB {
 	return Db
