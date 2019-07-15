@@ -1,0 +1,13 @@
+<!-- forms.html -->
+{{if .Success}}
+    <h1>Thanks for your message!</h1>
+{{else}}
+    <h1>Url Shortner</h1>
+    <form method="post" action="/fileUploadSuccess">
+        <div class="form-group">
+            <label for="jasonPath">File Path</label>
+            <input type="text" class="form-control" name="jsonPath">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{{end}}
