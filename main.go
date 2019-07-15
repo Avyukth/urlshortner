@@ -13,10 +13,12 @@ import (
 	//"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	."urlshorner/controller"
+	."urlshorner/model"
 )
 
 var db *gorm.DB
-var url = "www.google.com"
+//var url = "www.google.com"
 
 //var bleveIdx bleve.Index
 //
@@ -44,13 +46,16 @@ var url = "www.google.com"
 //}
 
 func main() {
+
+	db=InitDB(db)
+	fmt.Println(db)
 	router := gin.Default()
 	//router.GET("/", init)
 
 	router.LoadHTMLGlob("views/*")
-	//router.GET("/" ,createUrlShorter)
 	v1 := router.Group("/")
 	{
+		v1.GET("/",baseUrl)
 		v1.GET("/{id}", baseUrl)
 		v1.GET("/get", getShortUrl)
 		v1.POST("/long", redirectShortUrl)
@@ -58,10 +63,6 @@ func main() {
 		v1.GET("/short", createUrlShorter)
 		v1.GET("/upload", fileUploadForm)
 		v1.POST("/fileUploadSuccess", fileUpload)
-
-
-		//	//	//v1.GET("/", fetchAllUrlShorter)	//v1.PUT("/:id", updateUrlShorter)
-		////	//v1.DELETE("/:id", deleteUrlShorter)
 	}
 
 	router.Run()
@@ -83,6 +84,7 @@ func fileUpload(c *gin.Context) {
 
 	jsonPath := c.PostForm("jsonPath")
 	jsonFile, err := os.Open(jsonPath)
+	//fmt.Println(err)
 
 	if err != nil {
 		fmt.Println(err)
@@ -95,26 +97,28 @@ func fileUpload(c *gin.Context) {
 		urlHashId := generateHash(urls.Urls[i])
 		shortenUrl := "http://rzp.com/" + urlHashId
 		if (!chackHashExist(urlHashId)){
-			data := urlModel{UrlHashId: urlHashId, Url: urls.Urls[i], Shorten: shortenUrl}
+			data := UrlModel{UrlHashId: urlHashId, Url: urls.Urls[i], Shorten: shortenUrl}
 			db.Debug().Create(&data)
 		}
-		//c.HTML(http.StatusOK, "index.html", gin.H{
+		//c.HTML(http.StatusOK, "sucess.html", gin.H{
 		//	"shortU": shortenUrl,
 		//})
+		fmt.Println(urls)
+
 	}
-	fmt.Println("gvHHbhewfbdhbcws hdenfjknn")
+	//fmt.Println("gvHHbhewfbdhbcws hdenfjknn")
 
 }
-func init() {
-	var err error
-	db, err = gorm.Open("mysql", "root:root@/urlshort?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		fmt.Println(err)
-		panic("failed to connect database ")
-	}
-	//Migrate the Schema
-	db.AutoMigrate(&urlModel{})
-}
+//func init() {
+//	var err error
+//	db, err = gorm.Open("mysql", "root:root@/urlshort?charset=utf8&parseTime=True&loc=Local")
+//	if err != nil {
+//		fmt.Println(err)
+//		panic("failed to connect database ")
+//	}
+//	//Migrate the Schema
+//	db.AutoMigrate(&UrlModel{})
+//}
 
 func generateHash(urlData string) string {
 	h := md5.New()
@@ -124,23 +128,34 @@ func generateHash(urlData string) string {
 }
 
 func chackHashExist(urlHashId string) bool {
-	var todo urlModel
+	var todo UrlModel
+	fmt.Println(todo.UrlHashId)
 	db.Where("url_hash_id = ?", urlHashId).First(&todo)
+	fmt.Println("urlHashId2")
+
 	if todo.ID == 0 {
 		return false
 	}
+	fmt.Println("urlHashId3")
 	return true
+
 }
 
 func cretaeShortUrl(c *gin.Context) {
 	urlData := c.PostForm("url")
 	urlHashId := generateHash(urlData)
 	shortenUrl := "http://rzp.com/" + urlHashId
+	fmt.Println(shortenUrl)
+	//fmt.Println(shortenUrl)
+
 	if (!chackHashExist(urlHashId)){
-		data := urlModel{UrlHashId: urlHashId, Url: urlData, Shorten: shortenUrl}
+		data := UrlModel{UrlHashId: urlHashId, Url: urlData, Shorten: shortenUrl}
+		fmt.Println(data)
 		db.Debug().Create(&data)
+		fmt.Println("Hello Data")
+
 	}
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.HTML(http.StatusOK, "sucess.html", gin.H{
 		"shortU": shortenUrl,
 	})
 }
@@ -156,7 +171,7 @@ func redirectShortUrl(c *gin.Context) {
 	//out := db.Where("url = ?", "url_hash_id").First(hashID[1])
 	//fmt.Println(out)
 	//fmt.Println("hello again")
-	var todo urlModel
+	var todo UrlModel
 	UrlHashId := hashID[1]
 
 	//db.First(&todo, UrlHashId)
@@ -166,54 +181,20 @@ func redirectShortUrl(c *gin.Context) {
 		return
 	}
 	//c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": todo.Url})
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.HTML(http.StatusOK, "sucess.html", gin.H{
 		"shortU": todo.Url, "type": "Long",
 	})
 
 }
 func baseUrl(c *gin.Context) {
-
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"title": "Users",
+	})
 }
 func createUrlShorter(c *gin.Context) {
 	fmt.Println("here")
-
-	////tmpl := template.Must(template.ParseFiles("forms.html"))
-	//
-	//message, _ := c.GetQuery("m")
-	//c.String(http.StatusOK, "Get works! you sent: "+message)
-	//c.HTML(http.StatusOK,"forms.html",gin.H{"title": "Page file title!!"})
-	//db,err=gorm.Open("mysql","root:root@/urlshort?charset=utf8&parseTime=True&loc=Local")
-	//if err != nil {
-	//	fmt.Println(err)
-	//	panic("failed to connect database " )
-	//}
-	//Also we can use save that will return primary key
-	//db.Debug().Save(&data)	////tmpl := template.Must(template.ParseFiles("forms.html"))
-	//
-	//message, _ := c.GetQuery("m")
-	//c.String(http.StatusOK, "Get works! you sent: "+message)
-	//c.HTML(http.StatusOK,"forms.html",gin.H{"title": "Page file title!!"})
-	//db,err=gorm.Open("mysql","root:root@/urlshort?charset=utf8&parseTime=True&loc=Local")
-	//if err != nil {
-	//	fmt.Println(err)
-	//	panic("failed to connect database " )
-	//}
-	//Also we can use save th
-	// at will return primary key
-	//db.Debug().Save(&data)
 	c.HTML(http.StatusOK, "forms.html", gin.H{
 		"title": "Users",
 	})
 
 }
-
-type (
-	urlModel struct {
-		gorm.Model
-		UrlHashId string `gorm:"primary_key"`
-		Url       string
-		Shorten   string
-		//ShortenHashId []byte
-	}
-)
-
