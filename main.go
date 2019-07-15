@@ -1,9 +1,13 @@
 package main
 
 import (
-	"crypto/sha256"
+	//"crypto/sha256"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/speps/go-hashids"
+	"net/http"
+	"time"
+
 	//"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -15,15 +19,16 @@ func main()  {
 	router:=gin.Default()
 	//router.GET("/", init)
 
+	router.LoadHTMLGlob("views/*")
 	//router.GET("/" ,createUrlShorter)
-	v1:=router.Group("/urlshort")
+	v1:=router.Group("/")
 	{
 		v1.GET("/{id}", baseUrl)
-		v1.GET("/long", getLongUrl)
-		v1.PUT("/short", createUrlShorter)
+		v1.POST("/long", getLongUrl)
+		v1.GET("/short", createUrlShorter)
 
-		//	//v1.GET("/", fetchAllUrlShorter)	//v1.PUT("/:id", updateUrlShorter)
-	//	//v1.DELETE("/:id", deleteUrlShorter)
+	//	//	//v1.GET("/", fetchAllUrlShorter)	//v1.PUT("/:id", updateUrlShorter)
+	////	//v1.DELETE("/:id", deleteUrlShorter)
 	}
 
 	router.Run()
@@ -41,6 +46,27 @@ func init()  {
 }
 
 func getLongUrl(c *gin.Context)  {
+	fmt.Println("Hello ")
+	urlData := c.PostForm("url")
+	hd := hashids.NewData()
+	h,_ := hashids.NewWithData(hd)
+	now := time.Now()
+	urlHashId, _ := h.Encode([]int{int(now.Unix())})
+	shortenUrl:= "http://rzp:3030/" + urlHashId
+
+
+	//urlH := sha256.New()
+	//urlH.Write([]byte(urlData))
+	//urlHashId:=urlH.Sum(nil)
+	//shortenUrl:="www.bing.com"
+	//shortenUrlH:= sha256.New()
+	//shortenUrlH.Write([]byte(shortenUrl))
+	//shortenUrlHId:=urlH.Sum(nil)
+	////fmt.Println(shortenUrlHId)
+	data:=urlModel{UrlHashId:urlHashId,Url:urlData,Shorten:shortenUrl}
+	//fmt.Println(data)
+	//db.Exec("select * from url_models")
+	db.Debug().Create(&data)
 
 }
 func baseUrl(c *gin.Context)  {
@@ -48,6 +74,7 @@ func baseUrl(c *gin.Context)  {
 }
 func createUrlShorter(c *gin.Context)  {
 	fmt.Println("here")
+
 	////tmpl := template.Must(template.ParseFiles("forms.html"))
 	//
 	//message, _ := c.GetQuery("m")
@@ -58,20 +85,12 @@ func createUrlShorter(c *gin.Context)  {
 	//	fmt.Println(err)
 	//	panic("failed to connect database " )
 	//}
-	urlH := sha256.New()
-	urlH.Write([]byte(url))
-	urlHashId:=urlH.Sum(nil)
-	shortenUrl:="www.bing.com"
-	shortenUrlH:= sha256.New()
-	shortenUrlH.Write([]byte(shortenUrl))
-	shortenUrlHId:=urlH.Sum(nil)
-	fmt.Println(shortenUrlHId)
-	data:=urlModel{UrlHashId:urlHashId,Url:url,Shorten:shortenUrl,ShortenHashId:shortenUrlHId}
-	fmt.Println(data)
-	//db.Exec("select * from url_models")
-	db.Debug().Create(&data)
 	//Also we can use save that will return primary key
 	//db.Debug().Save(&data)
+	c.HTML(http.StatusOK, "forms.html", gin.H{
+		"title": "Users",
+	})
+
 
 
 }
@@ -79,10 +98,10 @@ func createUrlShorter(c *gin.Context)  {
 type (
 	urlModel struct{
 		gorm.Model
-		UrlHashId []byte `gorm:"primary_key"`
+		UrlHashId string `gorm:"primary_key"`
 		Url string
 		Shorten string
-		ShortenHashId []byte
+		//ShortenHashId []byte
 	}
 
 )
@@ -102,4 +121,4 @@ func initIndexToChar()  {
 
 }
 
-b := [2]string{"Penn", "Teller"}
+//b := [2]string{"Penn", "Teller"}
