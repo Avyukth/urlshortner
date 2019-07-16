@@ -17,6 +17,9 @@ func AllRoutes() {
 		v1.GET("/short", CreateUrlShorter)
 		v1.GET("/upload", FileUploadForm)
 		v1.POST("/fileUploadSuccess", FileUpload)
+		v1.GET("/stats", Stats)
+
+
 	}
 
 	router.Run()
