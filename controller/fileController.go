@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync"
 	. "urlshorner/migration"
 	. "urlshorner/model"
 )
@@ -26,14 +27,21 @@ func FileUpload(c *gin.Context) {
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 	var urls Urls
 	json.Unmarshal(byteValue, &urls)
+	var wg sync.WaitGroup
 	for i := 0; i < len(urls.Urls); i++ {
-		urlHashId := generateHash(urls.Urls[i])
-		shortenUrl := "http://rzp.com/" + urlHashId
-		if !checkHashExist(urlHashId) {
-			data := UrlModel{UrlHashId: urlHashId, Url: urls.Urls[i], Shorten: shortenUrl}
-			Db.Debug().Create(&data)
-		}
+		wg.Add(1)
+		go func(url string) {
+			urlHashId := generateHash(url)
+			shortenUrl := "http://rzp.com/" + urlHashId
+			if !checkHashExist(urlHashId) {
+				data := UrlModel{UrlHashId: urlHashId, Url: url, Shorten: shortenUrl}
+				Db.Debug().Create(&data)
+			}
+			wg.Done()
+		}(urls.Urls[i])
 	}
+	wg.Wait()
+
 	c.HTML(http.StatusOK, "allSuccess.html", gin.H{
 		"title": "All Success",
 	})
